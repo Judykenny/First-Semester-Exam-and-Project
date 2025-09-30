@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Stopwatch</title>
+    <style>
+        :root {
+            /* Light Theme */
+            --bg-primary: #FF9B54;
+            --bg-secondary: #FFFFFF;
+            --text-primary: #333;
+            --display-bg: #333;
+            --display-text: #FF9B54;
+            
+            /* Dark Theme */
+            --dark-bg-primary: #2C3E50;
+            --dark-bg-secondary: #34495E;
+            --dark-text-primary: #ECF0F1;
+            --dark-display-bg: #2C3E50;
+            --dark-display-text: #2ECC71;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--bg-primary), #FF6B35);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-theme {
+            background-color: var(--dark-bg-primary);
+            background: linear-gradient(135deg, var(--dark-bg-primary), #34495E);
+        }
+
+        .stopwatch-container {
+            text-align: center;
+            background-color: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme .stopwatch-container {
+            background-color: var(--dark-bg-secondary);
+            color: var(--dark-text-primary);
+        }
+
+        #display {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background-color: var(--display-bg);
+            color: var(--display-text);
+            padding: 15px;
+            border-radius: 10px;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme #display {
+            background-color: var(--dark-display-bg);
+            color: var(--dark-display-text);
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 22px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 5px;
+        }
+
+        #start { background-color: #2ECC71; color: white; }
+        #stop { background-color: #E74C3C; color: white; }
+        #reset { background-color: #3498DB; color: white; }
+        #lap { background-color: #F39C12; color: white; }
+        #theme-toggle { 
+            background-color: #9B59B6; 
+            color: white; 
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #lap-times {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        .dark-theme #lap-times {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 480px) {
+            .stopwatch-container {
+                width: 95%;
+                padding: 20px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            #theme-toggle {
+                position: static;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="theme-toggle">🌓 Toggle Theme</button>
+    <div class="stopwatch-container">
+        <div id="display">00:00:00.000</div>
+        <div class="buttons">
+            <button id="start">Start</button>
+            <button id="stop">Stop</button>
+            <button id="reset">Reset</button>
+            <button id="lap">Lap</button>
+        </div>
+        <div id="lap-times"></div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const display = document.getElementById('display');
+        const startBtn = document.getElementById('start');
+        const stopBtn = document.getElementById('stop');
+        const resetBtn = document.getElementById('reset');
+        const lapBtn = document.getElementById('lapBtn');
+        const lapTimesContainer = document.getElementById('lap-times');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // Stopwatch Variables
+        let startTime;
+        let elapsedTime = 0;
+        let timerInterval;
+        let lapTimes = [];
+
+        // Format time with milliseconds
+        function formatTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const ms = milliseconds % 1000;
+
+            return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${padMs(ms)}`;
+        }
+
+        // Pad numbers with leading zero
+        function pad(number) {
+            return number.toString().padStart(2, '0');
+        }
+
+        // Pad milliseconds with zeros
+        function padMs(number) {
+            return number.toString().padStart(3, '0');
+        }
+
+        // Start the stopwatch
+        function startTimer() {
+            if (timerInterval) return;
+
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(() => {
+                elapsedTime = Date.now() - startTime;
+                display.textContent = formatTime(elapsedTime);
+            }, 10); // Update more frequently for milliseconds
+        }
+
+        // Stop the stopwatch
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        // Reset the stopwatch
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            elapsedTime = 0;
+            display.textContent = '00:00:00.000';
+            lapTimes = [];
+            lapTimesContainer.innerHTML = '';
+        }
+
+        // Record lap time
+        function recordLap() {
+            if (!timerInterval) return;
+            
+            const lapTime = formatTime(elapsedTime);
+            lapTimes.push(lapTime);
+            
+            const lapElement = document.createElement('div');
+            lapElement.textContent = `Lap ${lapTimes.length}: ${lapTime}`;
+            lapTimesContainer.appendChild(lapElement);
+            
+            // Scroll to bottom of lap times
+            lapTimesContainer.scrollTop = lapTimesContainer.scrollHeight;
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            // Optional: Save theme preference in localStorage
+            const isDarkTheme = document.body.classList.contains('dark-theme');
+            localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light');
+        }
+
+        // Check saved theme on load
+        function checkSavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+        }
+
+        // Event Listeners
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        lapBtn.addEventListener('click', recordLap);
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Check saved theme when page loads
+        checkSavedTheme();
+    </script>
+</body>
+</html>

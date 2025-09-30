@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stopwatch App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>⏱ Stopwatch</h1>
+
+    <!-- Timer Display -->
+    <div id="display">00:00:00</div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+      <button id="start">Start</button>
+      <button id="stop">Stop</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <!-- Theme Buttons -->
+    <div class="theme-buttons">
+      <p>Change Theme:</p>
+      <button onclick="setTheme('light')">Light</button>
+      <button onclick="setTheme('dark')">Dark</button>
+      <button onclick="setTheme('blue')">Blue</button>
+      <button onclick="setTheme('green')">Green</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Copyright © 2025 Built with ❤️ by Judith</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
